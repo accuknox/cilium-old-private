@@ -55,6 +55,11 @@ var _ = Describe("K8sDatapathConfig", func() {
 
 	AfterAll(func() {
 		deploymentManager.DeleteCilium()
+		// The last test may have configured the datapath in a mode that
+		// is incompatible with the mode used in the next test. Redeploy
+		// kube-dns so that it will be properly provisioned as part of
+		// bootstrap in the next test.
+		kubectl.RedeployDNS()
 		kubectl.CloseSSHClient()
 	})
 
@@ -219,7 +224,7 @@ var _ = Describe("K8sDatapathConfig", func() {
 				"encryption.enabled":   "true",
 			}
 			enableVXLANTunneling(options)
-			deploymentManager.DeployCilium(options, DeployCiliumOptionsAndDNS)
+			deploymentManager.DeployCilium(options, RedeployCiliumAfterDatapathChange)
 			validateBPFTunnelMap()
 			Expect(testPodConnectivityAcrossNodes(kubectl)).Should(BeTrue(), "Connectivity test with IPsec between nodes failed")
 		}, 600)
@@ -235,7 +240,7 @@ var _ = Describe("K8sDatapathConfig", func() {
 				"sockops.enabled": "true",
 			}
 			enableVXLANTunneling(options)
-			deploymentManager.DeployCilium(options, DeployCiliumOptionsAndDNS)
+			deploymentManager.DeployCilium(options, RedeployCiliumAfterDatapathChange)
 			validateBPFTunnelMap()
 			Expect(testPodConnectivityAcrossNodes(kubectl)).Should(BeTrue(), "Connectivity test between nodes failed")
 			Expect(testPodConnectivitySameNodes(kubectl)).Should(BeTrue(), "Connectivity test on same node failed")
@@ -244,7 +249,7 @@ var _ = Describe("K8sDatapathConfig", func() {
 		It("Check connectivity with VXLAN encapsulation", func() {
 			options := map[string]string{}
 			enableVXLANTunneling(options)
-			deploymentManager.DeployCilium(options, DeployCiliumOptionsAndDNS)
+			deploymentManager.DeployCilium(options, RedeployCiliumAfterDatapathChange)
 			validateBPFTunnelMap()
 			Expect(testPodConnectivityAcrossNodes(kubectl)).Should(BeTrue(), "Connectivity test between nodes failed")
 		}, 600)
@@ -253,7 +258,7 @@ var _ = Describe("K8sDatapathConfig", func() {
 		SkipItIf(helpers.RunsOnGKE, "Check connectivity with Geneve encapsulation", func() {
 			deploymentManager.DeployCilium(map[string]string{
 				"tunnel": "geneve",
-			}, DeployCiliumOptionsAndDNS)
+			}, RedeployCiliumAfterDatapathChange)
 			validateBPFTunnelMap()
 			Expect(testPodConnectivityAcrossNodes(kubectl)).Should(BeTrue(), "Connectivity test between nodes failed")
 		})
@@ -263,7 +268,7 @@ var _ = Describe("K8sDatapathConfig", func() {
 				"endpointRoutes.enabled": "true",
 			}
 			enableVXLANTunneling(options)
-			deploymentManager.DeployCilium(options, DeployCiliumOptionsAndDNS)
+			deploymentManager.DeployCilium(options, RedeployCiliumAfterDatapathChange)
 			Expect(testPodConnectivityAcrossNodes(kubectl)).Should(BeTrue(), "Connectivity test between nodes failed")
 
 			if helpers.RunsOn419OrLaterKernel() {
@@ -279,7 +284,7 @@ var _ = Describe("K8sDatapathConfig", func() {
 				"iptablesRandomFully": "true",
 			}
 			enableVXLANTunneling(options)
-			deploymentManager.DeployCilium(options, DeployCiliumOptionsAndDNS)
+			deploymentManager.DeployCilium(options, RedeployCiliumAfterDatapathChange)
 			Expect(testPodConnectivityAcrossNodes(kubectl)).Should(BeTrue(), "Connectivity test between nodes failed")
 
 			By("Test iptables masquerading")
@@ -292,7 +297,7 @@ var _ = Describe("K8sDatapathConfig", func() {
 				"bpf.masquerade": "false",
 			}
 			enableVXLANTunneling(options)
-			deploymentManager.DeployCilium(options, DeployCiliumOptionsAndDNS)
+			deploymentManager.DeployCilium(options, RedeployCiliumAfterDatapathChange)
 			Expect(testPodConnectivityAcrossNodes(kubectl)).Should(BeTrue(), "Connectivity test between nodes failed")
 
 			By("Test iptables masquerading")
@@ -308,7 +313,7 @@ var _ = Describe("K8sDatapathConfig", func() {
 				"tunnel":                 "disabled",
 				"k8s.requireIPv4PodCIDR": "true",
 				"endpointRoutes.enabled": "false",
-			}, DeployCiliumOptionsAndDNS)
+			}, RedeployCiliumAfterDatapathChange)
 
 			Expect(testPodConnectivityAcrossNodes(kubectl)).Should(BeTrue(), "Connectivity test between nodes failed")
 		})
@@ -318,10 +323,14 @@ var _ = Describe("K8sDatapathConfig", func() {
 				"tunnel":                 "disabled",
 				"k8s.requireIPv4PodCIDR": "true",
 				"endpointRoutes.enabled": "true",
-			}, DeployCiliumOptionsAndDNS)
+			}, RedeployCiliumAfterDatapathChange)
 
 			Expect(testPodConnectivityAcrossNodes(kubectl)).Should(BeTrue(), "Connectivity test between nodes failed")
 		})
+
+		// CAUTION: endpointRoutes mode was toggled. The next test
+		// MUST redeploy kubedns via RedeployCiliumAfterDatapathChange
+		// or potentially face GH-16717.
 	})
 
 	Context("AutoDirectNodeRoutes", func() {
@@ -341,7 +350,7 @@ var _ = Describe("K8sDatapathConfig", func() {
 				// See #12205 for details.
 				options["hostFirewall"] = "false"
 			}
-			deploymentManager.DeployCilium(options, DeployCiliumOptionsAndDNS)
+			deploymentManager.DeployCilium(options, RedeployCiliumAfterDatapathChange)
 
 			Expect(testPodConnectivityAcrossNodes(kubectl)).Should(BeTrue(), "Connectivity test between nodes failed")
 			if helpers.RunsOn419OrLaterKernel() {
@@ -362,7 +371,7 @@ var _ = Describe("K8sDatapathConfig", func() {
 			if helpers.DoesNotRunWithKubeProxyReplacement() {
 				options["masquerade"] = "false"
 			}
-			deploymentManager.DeployCilium(options, DeployCiliumOptionsAndDNS)
+			deploymentManager.DeployCilium(options, RedeployCiliumAfterDatapathChange)
 
 			Expect(testPodConnectivityAcrossNodes(kubectl)).Should(BeTrue(), "Connectivity test between nodes failed")
 		})
@@ -376,7 +385,7 @@ var _ = Describe("K8sDatapathConfig", func() {
 
 			deploymentManager.DeployCilium(map[string]string{
 				"sockops.enabled": "true",
-			}, DeployCiliumOptionsAndDNS)
+			}, RedeployCiliumAfterDatapathChange)
 			Expect(testPodConnectivityAcrossNodes(kubectl)).Should(BeTrue(), "Connectivity test between nodes failed")
 			Expect(testPodConnectivitySameNodes(kubectl)).Should(BeTrue(), "Connectivity test on same node failed")
 		}, 600)
@@ -622,11 +631,14 @@ var _ = Describe("K8sDatapathConfig", func() {
 				"encryption.enabled":     "true",
 				"encryption.type":        "wireguard",
 				"l7Proxy":                "false",
-			}, DeployCiliumOptionsAndDNS)
+			}, RedeployCiliumAfterDatapathChange)
 
 			testWireguard("cilium_vxlan")
 		})
 
+		// CAUTION: endpointRoutes mode was toggled. The next test
+		// MUST redeploy kubedns via RedeployCiliumAfterDatapathChange()
+		// or potentially face GH-16717.
 	})
 
 	Context("Sockops performance", func() {
@@ -649,7 +661,7 @@ var _ = Describe("K8sDatapathConfig", func() {
 
 		It("Check baseline performance with direct routing TCP_CRR", func() {
 			Skip("Skipping TCP_CRR until fix reaches upstream")
-			deploymentManager.DeployCilium(directRoutingOptions, DeployCiliumOptionsAndDNS)
+			deploymentManager.DeployCilium(directRoutingOptions, RedeployCiliumAfterDatapathChange)
 			namespace := deployNetperf()
 			Expect(testPodNetperfSameNodes(kubectl, namespace, helpers.TCP_CRR)).Should(BeTrue(), "Connectivity test TCP_CRR on same node failed")
 		}, 600)
@@ -829,7 +841,7 @@ var _ = Describe("K8sDatapathConfig", func() {
 				options["gke.enabled"] = "false"
 				options["tunnel"] = "vxlan"
 			}
-			deploymentManager.DeployCilium(options, DeployCiliumOptionsAndDNS)
+			deploymentManager.DeployCilium(options, RedeployCiliumAfterDatapathChange)
 			testHostFirewall(kubectl)
 		})
 
@@ -845,7 +857,7 @@ var _ = Describe("K8sDatapathConfig", func() {
 			} else {
 				options["autoDirectNodeRoutes"] = "true"
 			}
-			deploymentManager.DeployCilium(options, DeployCiliumOptionsAndDNS)
+			deploymentManager.DeployCilium(options, RedeployCiliumAfterDatapathChange)
 			testHostFirewall(kubectl)
 		})
 
@@ -858,9 +870,13 @@ var _ = Describe("K8sDatapathConfig", func() {
 			if !helpers.RunsOnGKE() {
 				options["autoDirectNodeRoutes"] = "true"
 			}
-			deploymentManager.DeployCilium(options, DeployCiliumOptionsAndDNS)
+			deploymentManager.DeployCilium(options, RedeployCiliumAfterDatapathChange)
 			testHostFirewall(kubectl)
 		})
+
+		// CAUTION: endpointRoutes mode was toggled. The next test
+		// MUST redeploy kubedns via RedeployCiliumAfterDatapathChange
+		// or potentially face GH-16717.
 	})
 
 	Context("Iptables", func() {
@@ -871,7 +887,7 @@ var _ = Describe("K8sDatapathConfig", func() {
 				"tunnel":                          "disabled",
 				"autoDirectNodeRoutes":            "true",
 				"installNoConntrackIptablesRules": "true",
-			}, DeployCiliumOptionsAndDNS)
+			}, RedeployCiliumAfterDatapathChange)
 
 			ciliumPod, err := kubectl.GetCiliumPodOnNode(helpers.K8s1)
 			ExpectWithOffset(1, err).Should(BeNil(), "Unable to determine cilium pod on node %s", helpers.K8s1)

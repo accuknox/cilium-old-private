@@ -170,11 +170,22 @@ func RedeployCiliumWithMerge(vm *helpers.Kubectl,
 
 // DeployCiliumOptionsAndDNS deploys DNS and cilium with options into the kubernetes cluster
 func DeployCiliumOptionsAndDNS(vm *helpers.Kubectl, ciliumFilename string, options map[string]string) {
+	deployCiliumOptionsAndDNS(vm, ciliumFilename, options, false)
+}
+
+// RedeployCiliumAfterDatapathChange deploys DNS and cilium with options into
+/// the kubernetes cluster, forcing DNS redeployment to ensure that the pods
+// are operating with the new datapath mode.
+func RedeployCiliumAfterDatapathChange(vm *helpers.Kubectl, ciliumFilename string, options map[string]string) {
+	deployCiliumOptionsAndDNS(vm, ciliumFilename, options, true)
+}
+
+func deployCiliumOptionsAndDNS(vm *helpers.Kubectl, ciliumFilename string, options map[string]string, forceDNSRedeploy bool) {
 	redeployCilium(vm, ciliumFilename, options)
 
 	vm.RestartUnmanagedPodsInNamespace(helpers.LogGathererNamespace)
 
-	vm.RedeployKubernetesDnsIfNecessary()
+	vm.RedeployKubernetesDnsIfNecessary(forceDNSRedeploy)
 
 	switch helpers.GetCurrentIntegration() {
 	case helpers.CIIntegrationGKE:

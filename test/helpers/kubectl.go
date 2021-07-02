@@ -2038,15 +2038,22 @@ iteratePods:
 	}
 }
 
+// RedeployDNS deletes the kube-dns pods and does not wait for the deletion
+// to complete. Useful to ensure that the pods are recreated after datapath
+// configuration changes.
+func (kub *Kubectl) RedeployDNS() *CmdRes {
+	return kub.DeleteResource("pod", "-n "+KubeSystemNamespace+" -l "+kubeDNSLabel)
+}
+
 // RedeployKubernetesDnsIfNecessary validates if the Kubernetes DNS is
 // functional and re-deploys it if it is not and then waits for it to deploy
 // successfully and become operational. See ValidateKubernetesDNS() for the
 // list of conditions that must be met for Kubernetes DNS to be considered
 // operational.
-func (kub *Kubectl) RedeployKubernetesDnsIfNecessary() {
+func (kub *Kubectl) RedeployKubernetesDnsIfNecessary(force bool) {
 	ginkgoext.By("Validating if Kubernetes DNS is deployed")
 	err := kub.ValidateKubernetesDNS()
-	if err == nil {
+	if err == nil && !force {
 		ginkgoext.By("Kubernetes DNS is up and operational")
 		return
 	} else {
@@ -2054,7 +2061,7 @@ func (kub *Kubectl) RedeployKubernetesDnsIfNecessary() {
 	}
 
 	ginkgoext.By("Restarting Kubernetes DNS (-l %s)", kubeDNSLabel)
-	res := kub.DeleteResource("pod", "-n "+KubeSystemNamespace+" -l "+kubeDNSLabel)
+	res := kub.RedeployDNS()
 	if !res.WasSuccessful() {
 		ginkgoext.Failf("Unable to delete DNS pods: %s", res.OutputPrettyPrint())
 	}

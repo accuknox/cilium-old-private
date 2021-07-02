@@ -56,6 +56,11 @@ var _ = Describe("K8sCustomCalls", func() {
 	})
 
 	AfterAll(func() {
+		// The last test may have configured the datapath in a mode that
+		// is incompatible with the mode used in the next test. Redeploy
+		// kube-dns so that it will be properly provisioned as part of
+		// bootstrap in the next test.
+		kubectl.RedeployDNS()
 		kubectl.CloseSSHClient()
 	})
 
@@ -312,7 +317,7 @@ var _ = Describe("K8sCustomCalls", func() {
 			}
 
 			// Deploy Cilium, enable tail calls to custom programs
-			deploymentManager.DeployCilium(ciliumOptions, DeployCiliumOptionsAndDNS)
+			deploymentManager.DeployCilium(ciliumOptions, RedeployCiliumAfterDatapathChange)
 
 			ciliumPodK8s1, err := kubectl.GetCiliumPodOnNode(helpers.K8s1)
 			ExpectWithOffset(1, err).ShouldNot(HaveOccurred(), "Cannot get cilium pod on k8s1")
