@@ -1,3 +1,5 @@
+TEST
+=
 |logo|
 
 |cii| |slack| |go-report| |go-doc| |rtd| |apache| |gpl|
