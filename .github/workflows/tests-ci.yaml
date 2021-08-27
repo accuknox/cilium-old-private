@@ -1,5 +1,5 @@
 #  Based on cilium github actions.
-name: Self host CI
+name: Self-host CI
 
 on:
   issue_comment:
@@ -23,4 +23,4 @@ jobs:
       run: |
         cd test
         mkdir -p logs
-        NETNEXT=1 ginkgo --focus="K8s.*when SNAT*" -v -- --cilium.provision=true --cilium.skipLogs=true -cilium.showCommands=true | tee logs/logfile_$(date '+%Y-%m-%d-%H%M%S').txt
+        NETNEXT=1 ginkgo --focus="K8s.*" -v -- --cilium.provision=true --cilium.skipLogs=true -cilium.showCommands=true | tee logs/logfile_$(date '+%Y-%m-%d-%H%M%S').txt
