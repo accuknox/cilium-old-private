@@ -1,0 +1,26 @@
+#  Based on cilium github actions.
+name: Self host CI
+
+on:
+  issue_comment:
+    types:
+      - created
+jobs:
+  ci:
+    if: |
+      (github.event_name == 'issue_comment' && (
+        (startsWith(github.event.comment.body, 'test-ci'))
+      )) ||
+      (github.event_name == 'schedule' && github.repository == 'accuknox/cilium-private') ||
+      github.event_name == 'pull_request'
+    runs-on: self-hosted
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: 'recursive'
+
+    - name: Run ginkgo tests
+      run: |
+        cd test
+        mkdir -p logs
+        NETNEXT=1 ginkgo --focus="K8s.*when SNAT*" -v -- --cilium.provision=true --cilium.skipLogs=true -cilium.showCommands=true | tee logs/logfile_$(date '+%Y-%m-%d-%H%M%S').txt
