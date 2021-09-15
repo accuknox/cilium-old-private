@@ -319,9 +319,9 @@ jobs:
         kubectl scale deployments.apps -n kube-system coredns --replicas=1
         kubectl taint nodes nested-vm node-role.kubernetes.io/master-
         kubectl label nodes nested-vm cilium.io/ci-node=k8s1
-#     - name: Clean working directory
-#       shell: bash
-#       run: |
-#         cd $RUNNER_WORKSPACE
-#         cd ..
-#         rm -r *
+    - name: Clean working directory
+      shell: bash
+      run: |
+        cd $RUNNER_WORKSPACE
+        cd ..
+        rm -r *
