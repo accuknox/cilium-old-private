@@ -304,21 +304,21 @@ jobs:
         cd test
         vagrant destroy -f
         sudo bash -c "echo "" >  /etc/exports"
-    - name: Reset cluster
-      run: |
-        sudo systemctl restart docker.service
-        sudo kubeadm reset -f
-        sudo rm -R  $HOME/.kube
-        sudo kubeadm init > /dev/null
-        mkdir -p $HOME/.kube
-        sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-        sudo chown $(id -u):$(id -g) $HOME/.kube/config
-        kubectl scale deployments.apps -n kube-system coredns --replicas=1
-        kubectl taint nodes cilium-ci-vm-1 node-role.kubernetes.io/master-
-        kubectl label nodes cilium-ci-vm-1 cilium.io/ci-node=k8s1
-    - name: Clean working directory
-      shell: bash
-      run: |
-        cd $RUNNER_WORKSPACE
-        cd ..
-        rm -r *
+#     - name: Reset cluster
+#       run: |
+#         sudo systemctl restart docker.service
+#         sudo kubeadm reset -f
+#         sudo rm -R  $HOME/.kube
+#         sudo kubeadm init > /dev/null
+#         mkdir -p $HOME/.kube
+#         sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+#         sudo chown $(id -u):$(id -g) $HOME/.kube/config
+#         kubectl scale deployments.apps -n kube-system coredns --replicas=1
+#         kubectl taint nodes cilium-ci-vm-1 node-role.kubernetes.io/master-
+#         kubectl label nodes cilium-ci-vm-1 cilium.io/ci-node=k8s1
+#     - name: Clean working directory
+#       shell: bash
+#       run: |
+#         cd $RUNNER_WORKSPACE
+#         cd ..
+#         rm -r *
