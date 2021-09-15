@@ -287,6 +287,7 @@ jobs:
     - uses: actions/setup-go@v2
       with:
         go-version: '^1.17.1' # The Go version to download (if necessary) and use.
+    - name: Run ginkgo tests
     - run: |
         cd test
         go version
@@ -309,13 +310,22 @@ jobs:
         sudo bash -c "echo "" >  /etc/exports"
     - name: Reset cluster
       run: |
+        # Restart docker to clean stuck containers
         sudo systemctl restart docker.service
+        # Reset cluster
         sudo kubeadm reset -f
         sudo rm -R  $HOME/.kube
-        sudo kubeadm init > /dev/null
+        # Init cluster and get join command
+        output=$(sudo kubeadm init | grep join -A1)
+        join_cmd=$(echo $output | cut -d ':' -f 1 --complement | sed 's/\\//')
         mkdir -p $HOME/.kube
         sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
         sudo chown $(id -u):$(id -g) $HOME/.kube/config
+        # Reset worker node
+        ssh k8s2-1.22 "sudo kubeadm reset -f"
+        # Join worker node
+        ssh k8s2-1.22 "sudo $join_cmd"
+        # Some cilium node configurations
         kubectl scale deployments.apps -n kube-system coredns --replicas=1
         kubectl taint nodes cilium-ci-vm-1 node-role.kubernetes.io/master-
         kubectl label nodes cilium-ci-vm-1 cilium.io/ci-node=k8s1
