@@ -287,11 +287,8 @@ jobs:
     - uses: actions/setup-go@v2
       with:
         go-version: '^1.17.1' # The Go version to download (if necessary) and use.
-    - name: Run ginkgo tests
     - run: |
-        cd test
-        go version
-        ginkgo --focus="K8sDemo" -- -cilium.provision=false -cilium.kubeconfig=`echo ~/.kube/config` -cilium.image="docker.io/accuknox/cilium-dev" -cilium.tag="identity-soln" -cilium.operator-image="docker.io/accuknox/operator" -cilium.operator-tag="identity-soln" -cilium.passCLIEnvironment=true  
+        cd test && ginkgo --focus="K8sDemo" -- -cilium.provision=false -cilium.kubeconfig=`echo ~/.kube/config` -cilium.image="docker.io/accuknox/cilium-dev" -cilium.tag="identity-soln" -cilium.operator-image="docker.io/accuknox/operator" -cilium.operator-tag="identity-soln" -cilium.passCLIEnvironment=true  
   clean-up:
     if: |
       always() && (github.event_name == 'issue_comment' && (
