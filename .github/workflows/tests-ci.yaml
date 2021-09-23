@@ -287,5 +287,5 @@ jobs:
       with:
         go-version: '^1.17.1' # The Go version to download (if necessary) and use.
     - run: |
-        sudo apt update && sudo apt install -y golang-ginkgo-dev helm jq golang-ginkgo-dev gomega golangci-lint
+        sudo apt-get update && sudo apt-get install -y golang-ginkgo-dev helm jq golang-ginkgo-dev gomega golangci-lint
         cd test && ginkgo --focus="K8sDemo" --tags=integration_tests -- -cilium.provision=false -cilium.kubeconfig=`echo ~/.kube/config` -cilium.image="docker.io/accuknox/cilium-ci" -cilium.tag=${GITHUB_SHA} -cilium.operator-image="docker.io/accuknox/operator" -cilium.operator-tag=${GITHUB_SHA} -cilium.operator-suffix="-ci" -cilium.hubble-relay-image="docker.io/accuknox/hubble-relay-ci" -cilium.hubble-relay-tag=${GITHUB_SHA} -cilium.passCLIEnvironment=true
