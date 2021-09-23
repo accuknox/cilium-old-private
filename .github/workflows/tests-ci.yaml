@@ -297,4 +297,5 @@ jobs:
         sudo touch /etc/apt/sources.list.d/kubernetes.list
         echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
         sudo apt-get update && sudo apt-get install -y golang-ginkgo-dev jq golang-ginkgo-dev golang-gomega-dev kubectl=1.21.1-00
+        kubectl get pods -A
         cd test && CNI_INTEGRATION=gke ginkgo --focus="K8sDemo" --tags=integration_tests -- -cilium.provision=false -cilium.kubeconfig=`echo ~/.kube/config` -cilium.image="docker.io/accuknox/cilium-ci" -cilium.tag=${GITHUB_SHA} -cilium.operator-image="docker.io/accuknox/operator" -cilium.operator-tag=${GITHUB_SHA} -cilium.operator-suffix="-ci" -cilium.hubble-relay-image="docker.io/accuknox/hubble-relay-ci" -cilium.hubble-relay-tag=${GITHUB_SHA} -cilium.passCLIEnvironment=true
