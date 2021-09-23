@@ -300,5 +300,5 @@ jobs:
         whoami
         kubectl get pods -A
         cat ${KUBECONFIG}
-        NATIVE_CIDR="$(gcloud container clusters describe $CLUSTER_NAME --zone $CLUSTER_ZONE --format 'value(clusterIpv4Cidr)')"
+        NATIVE_CIDR="$(gcloud container clusters describe ${{ env.GKE_CLUSTER }} --zone ${{ env.GKE_ZONE }}  --format 'value(clusterIpv4Cidr)')"
         cd test && CNI_INTEGRATION=gke ginkgo --focus="K8sDemo" --tags=integration_tests -- -cilium.provision=false -cilium.kubeconfig=`echo ${KUBECONFIG}` -cilium.image="docker.io/accuknox/cilium-ci" -cilium.tag=${GITHUB_SHA} -cilium.operator-image="docker.io/accuknox/operator" -cilium.operator-tag=${GITHUB_SHA} -cilium.operator-suffix="-ci" -cilium.hubble-relay-image="docker.io/accuknox/hubble-relay-ci" -cilium.hubble-relay-tag=${GITHUB_SHA} -cilium.passCLIEnvironment=true
