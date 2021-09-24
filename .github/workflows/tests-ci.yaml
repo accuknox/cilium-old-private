@@ -291,6 +291,11 @@ jobs:
         tar -zxvf helm-v3.7.0-linux-amd64.tar.gz
         sudo mv linux-amd64/helm /usr/local/bin/helm
         curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.42.1
+        sudo apt-get update
+        sudo apt-get install -y apt-transport-https curl
+        curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+        sudo touch /etc/apt/sources.list.d/kubernetes.list
+        echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
         sudo apt-get update && sudo apt-get install -y golang-ginkgo-dev jq golang-ginkgo-dev golang-gomega-dev kubectl=1.21.1-00
         export NATIVE_CIDR="$(gcloud container clusters describe ${{ env.GKE_CLUSTER }} --zone ${{ env.GKE_ZONE }}  --format 'value(clusterIpv4Cidr)')"
         cd test && CNI_INTEGRATION=gke ginkgo --focus="K8s" --tags=integration_tests -- -cilium.provision=false -cilium.kubeconfig=`echo ${KUBECONFIG}` -cilium.image="docker.io/accuknox/cilium-ci" -cilium.tag=${GITHUB_SHA} -cilium.operator-image="docker.io/accuknox/operator" -cilium.operator-tag=${GITHUB_SHA} -cilium.operator-suffix="-ci" -cilium.hubble-relay-image="docker.io/accuknox/hubble-relay-ci" -cilium.hubble-relay-tag=${GITHUB_SHA} -cilium.passCLIEnvironment=true
