@@ -298,6 +298,6 @@ jobs:
         echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
         sudo apt-get update && sudo apt-get install -y golang-ginkgo-dev jq golang-ginkgo-dev golang-gomega-dev kubectl=1.21.1-00
         export NATIVE_CIDR="$(gcloud container clusters describe ${{ env.GKE_CLUSTER }} --zone ${{ env.GKE_ZONE }}  --format 'value(clusterIpv4Cidr)')"
-        echo ${KUBECONFIG}
+        cat ${KUBECONFIG}
         cd test && CNI_INTEGRATION=gke ginkgo --focus="K8s" --tags=integration_tests -- -cilium.provision=false -cilium.kubeconfig=`echo ${KUBECONFIG}` cilium.image="docker.io/accuknox/cilium-dev" -cilium.tag="identity-soln" -cilium.operator-image="docker.io/accuknox/operator" -cilium.operator-tag="identity-soln" -cilium.passCLIEnvironment=true
         # cd test && CNI_INTEGRATION=gke ginkgo --focus="K8s" --tags=integration_tests -- -cilium.provision=false -cilium.kubeconfig=`echo ${KUBECONFIG}` -cilium.image="docker.io/accuknox/cilium-ci" -cilium.tag=${GITHUB_SHA} -cilium.operator-image="docker.io/accuknox/operator" -cilium.operator-tag=${GITHUB_SHA} -cilium.operator-suffix="-ci" -cilium.hubble-relay-image="docker.io/accuknox/hubble-relay-ci" -cilium.hubble-relay-tag=${GITHUB_SHA} -cilium.passCLIEnvironment=true
