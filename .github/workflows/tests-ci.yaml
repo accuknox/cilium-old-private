@@ -283,7 +283,7 @@ jobs:
         cluster_name: ${{ env.GKE_CLUSTER }}
         location: ${{ env.GKE_ZONE }}
         credentials: ${{ secrets.GKE_SA_KEY }}
-        #use_auth_provider: true
+        use_auth_provider: true
     - uses: actions/setup-go@v2
       with:
         go-version: '^1.17.1' # The Go version to download (if necessary) and use.
