@@ -276,13 +276,13 @@ jobs:
     # Configure Docker to use the gcloud command-line tool as a credential
     # helper for authentication
     - run: |-
-        gcloud auth configure-docker
+        gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE"
     # Get the GKE credentials so we can deploy to the cluster
-    - uses: google-github-actions/get-gke-credentials@v0.2.1
-      with:
-        cluster_name: ${{ env.GKE_CLUSTER }}
-        location: ${{ env.GKE_ZONE }}
-        credentials: ${{ secrets.GKE_SA_KEY }}
+#     - uses: google-github-actions/get-gke-credentials@v0.2.1
+#       with:
+#         cluster_name: ${{ env.GKE_CLUSTER }}
+#         location: ${{ env.GKE_ZONE }}
+#         credentials: ${{ secrets.GKE_SA_KEY }}
     - uses: actions/setup-go@v2
       with:
         go-version: '^1.17.1' # The Go version to download (if necessary) and use.
