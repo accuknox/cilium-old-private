@@ -48,7 +48,7 @@ jobs:
     if: |
       (github.event_name == 'issue_comment' && (
         startsWith(github.event.comment.body, 'ci-gke') ||
-        (startsWith(github.event.comment.body, 'test-me-please'))
+        (startsWith(github.event.comment.body, 'test-me-please') && (needs.check_changes.outputs.tested == 'true'))
       )) ||
       (github.event_name == 'schedule' && github.repository == 'accuknox/cilium-private') ||
       github.event_name == 'pull_request'
