@@ -91,6 +91,33 @@ jobs:
     runs-on: ubuntu-18.04
     needs: check_changes
     steps:  
+    - name: Set up job variables
+      id: vars
+      run: |
+        if [ ${{ github.event.issue.pull_request || github.event.pull_request }} ]; then
+          PR_API_JSON=$(curl \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            ${{ github.event.issue.pull_request.url || github.event.pull_request.url }})
+          SHA=$(echo "$PR_API_JSON" | jq -r ".head.sha")
+          OWNER=$(echo "$PR_API_JSON" | jq -r ".number")
+        else
+          SHA=${{ github.sha }}
+          OWNER=${{ github.sha }}
+        fi
+
+        CILIUM_INSTALL_DEFAULTS="--cluster-name=${{ env.clusterName }} \
+          --agent-image=quay.io/${{ github.repository_owner }}/cilium-ci \
+          --operator-image=quay.io/${{ github.repository_owner }}/operator-generic-ci \
+          --version=${SHA} \
+          --wait=false \
+          --config monitor-aggregation=none"
+        HUBBLE_ENABLE_DEFAULTS="--relay-image=quay.io/${{ github.repository_owner }}/hubble-relay-ci \
+          --relay-version=${SHA}"
+        echo ::set-output name=cilium_install_defaults::${CILIUM_INSTALL_DEFAULTS}
+        echo ::set-output name=hubble_enable_defaults::${HUBBLE_ENABLE_DEFAULTS}
+        echo ::set-output name=sha::${SHA}
+        echo ::set-output name=owner::${OWNER}
     - name: Wait for images to be available
       timeout-minutes: 10
       shell: bash
