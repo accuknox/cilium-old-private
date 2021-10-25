@@ -83,7 +83,7 @@ jobs:
   ci:
     if: |
       (github.event_name == 'issue_comment' && (
-        (startswith(github.event.comment.body, 'test-ci'))
+        (startswith(github.event.comment.body, 'test-me-please'))
       )) ||
       (github.event_name == 'schedule' && github.repository == 'accuknox/cilium-private') ||
       github.event_name == 'pull_request' ||
