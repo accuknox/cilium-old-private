@@ -91,6 +91,13 @@ jobs:
     runs-on: ubuntu-18.04
     needs: check_changes
     steps:  
+    - name: Wait for images to be available
+      timeout-minutes: 10
+      shell: bash
+      run: |
+        for image in cilium-ci operator-generic-ci hubble-relay-ci ; do
+          until curl --silent -f -lSL "https://docker.io/api/v1/repository/${{ github.repository_owner }}/$image/tag/${{ steps.vars.outputs.sha }}/images" &> /dev/null; do sleep 45s; done
+        done
     - uses: actions/checkout@v2
       with:
         submodules: 'recursive'
