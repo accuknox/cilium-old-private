@@ -48,9 +48,9 @@ jobs:
     if: |
       (github.event_name == 'issue_comment' && (
         startsWith(github.event.comment.body, 'ci-gke') ||
-        (startsWith(github.event.comment.body, 'test-me-please') && (needs.check_changes.outputs.tested == 'true'))
+        (startsWith(github.event.comment.body, 'test-me-please'))
       )) ||
-      (github.event_name == 'schedule' && github.repository == 'accuknox/cilium-private') ||
+      (github.event_name == 'schedule' && github.repository == 'cilium/cilium') ||
       github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     outputs:
@@ -83,11 +83,11 @@ jobs:
   ci:
     if: |
       (github.event_name == 'issue_comment' && (
-        (startswith(github.event.comment.body, 'test-me-please'))
+        startsWith(github.event.comment.body, 'ci-gke') ||
+        (startsWith(github.event.comment.body, 'test-me-please') && (needs.check_changes.outputs.tested == 'true'))
       )) ||
-      (github.event_name == 'schedule' && github.repository == 'accuknox/cilium-private') ||
-      github.event_name == 'pull_request' ||
-      github.event_name == 'push'
+      (github.event_name == 'schedule' && github.repository == 'cilium/cilium') ||
+      github.event_name == 'pull_request'
     runs-on: ubuntu-18.04
     needs: check_changes
     steps:  
