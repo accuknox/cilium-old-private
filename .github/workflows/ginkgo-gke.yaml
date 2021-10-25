@@ -144,7 +144,7 @@ jobs:
         wget https://get.helm.sh/helm-v3.7.0-linux-amd64.tar.gz
         tar -zxvf helm-v3.7.0-linux-amd64.tar.gz
         sudo mv linux-amd64/helm /usr/local/bin/helm
-        curl -ssfl https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env gopath)/bin v1.42.1
+        curl -ssfl https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sudo -E sh -s -- -b $(go env gopath)/bin v1.42.1"
         sudo apt-get update
         sudo apt-get install -y apt-transport-https curl
         curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
