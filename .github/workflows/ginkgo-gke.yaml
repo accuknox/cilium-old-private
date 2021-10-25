@@ -123,7 +123,7 @@ jobs:
       shell: bash
       run: |
         for image in cilium-ci operator-generic-ci hubble-relay-ci ; do
-          until curl --silent -f -lSL "https://hub.docker.com/v2/repositories/${{ github.repository_owner }}/$image/tag/${{ steps.vars.outputs.sha }}/images" &> /dev/null; do sleep 45s; done
+          until curl --silent -f -lSL "https://hub.docker.com/v2/repositories/${{ github.repository_owner }}/$image/tags/${{ steps.vars.outputs.sha }}/images" &> /dev/null; do sleep 45s; done
         done
     - uses: actions/checkout@v2
       with:
